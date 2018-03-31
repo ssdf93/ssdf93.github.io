@@ -17,7 +17,7 @@
 <li>根据上一步计算的权重，对value值进行加权计算，通常为加权求和，得到attention向量<br>$$AttentionValue(Q,K,V) = \sum_i{\alpha_i V_i}$$</li>
 <li><code>self-attention</code> 模型就是自己对自己求attention，即$Q=K=V$, 但是论文中对其attention权重做了缩放，除去了$K$的纬度$\sqrt{d_k}$,得到<br>$$Attention(Q,K,V)=\text{softmax}(\frac{QK^T}{\sqrt{d_k}})V.$$</li>
 </ol>
-<h2 id="Encoder"><a href="#Encoder" class="headerlink" title="Encoder"></a>Encoder</h2><p>编码器由6个完全相同的层组成，每一个层有两个子层，一个是multi-headed attention层，另一个是一个position-wise的全连接层。在每一层中应用残差网络和正则化层的方法。残差网络就是将输入也链接到输出，使得训练更加有效。</p>
+<h2 id="Encoder"><a href="#Encoder" class="headerlink" title="Encoder"></a>Encoder</h2><p>编码器由6个完全相同的层组成，每一个层有两个子层，一个是multi-headed attention层，另一个是一个position-wise的全连接层。在每一层中应用残差网络和正则化层的方法。残差网络就是将输入也链接到输出，使得训练更加有效。<br><img src="pic2" alt="图片2：编码器"></p>
 <h3 id="Multi-headed-Attention"><a href="#Multi-headed-Attention" class="headerlink" title="Multi-headed Attention"></a>Multi-headed Attention</h3><p>论文提出了<code>Multi-headed Attention</code>,旨在对Q,K,V，在不同的空间的特征进行提取，其思想也比较简单，就是多做几次attention，其中每次attention的<strong>特征不共享</strong></p>
 <p>$$\text{MultiHead}(Q,K,V) = \text{Concat}(\text{head}_i,\cdots,\text{head}_h)$$</p>
 <p>其中每一个$\text{head}_i$计算方法如下<br>$$\text{head}_i = \text{Attention}(Q W^Q_i,K W^K_i,V W^V_i)$$</p>
@@ -26,7 +26,7 @@
 <p>$$PE(pos,2i)=sin(\frac{pos}{10000^{2i/d_m}}) \\<br>PE(pos,2i+1)=cos(\frac{pos}{10000^{2i/d_m}})$$<br>其中，$d_m$表示输出的维数。<br>这样表示的原因是，对于$PE_{pos+k}$的词向量，可以是$PE_{pos}$向量的线性组合表示，这里利用了公式:<br>$$\sin(\alpha+\beta)=\sin\alpha \cos\beta + \cos\alpha \sin\beta \\<br>\cos(\alpha+\beta)=\cos\alpha \cos\beta - \sin\alpha \sin\beta$$</p>
 <p>最后得到的位置向量，可以和原词向量拼接，也可以和词向量相加。</p>
 <h3 id="Layer-Normalization"><a href="#Layer-Normalization" class="headerlink" title="Layer Normalization"></a>Layer Normalization</h3><p><code>Layer Normalization</code> 和<code>Batch Normalization</code> 想法相似，均为降低模型的</p>
-<h2 id="Decoder"><a href="#Decoder" class="headerlink" title="Decoder"></a>Decoder</h2><p>解码器也是由6个完全一样的层组成，每一个网络层由编码器中的两个子层组成外，还多了一个子层，是将编码器中的多头注意力加入到解码过程中。同时，使用了<code>Masking层</code>，对解码到当前位置<code>i</code>时，对解码器输入<code>i-1</code>之前的信息保留，对<code>i</code>之后的信息进行屏蔽</p>
+<h2 id="Decoder"><a href="#Decoder" class="headerlink" title="Decoder"></a>Decoder</h2><p>解码器也是由6个完全一样的层组成，每一个网络层由编码器中的两个子层组成外，还多了一个子层，是将编码器中的多头注意力加入到解码过程中。同时，使用了<code>Masking层</code>，对解码到当前位置<code>i</code>时，对解码器输入<code>i-1</code>之前的信息保留，对<code>i</code>之后的信息进行屏蔽<br><img src="pic3" alt="图片3:解码器"></p>
 <h2 id="Tricks"><a href="#Tricks" class="headerlink" title="Tricks"></a>Tricks</h2><p>论文和代码实现，使用了一下小技巧：</p>
 <ol>
 <li>使用了大量的dropout以增强模型的泛化能力。</li>
