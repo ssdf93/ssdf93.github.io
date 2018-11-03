@@ -3,10 +3,33 @@
 
 
     
+  <url>
+    <loc>http://cupdish.com/2016/06/15/kobe/</loc>
+    <lastmod>2018-11-03T15:10:23.943Z</lastmod>
+    <data>
+        <display>
+        <title>Kobe 投篮预测比赛解题报告</title>
+        <pubTime>2016-06-15T00:51:17.000Z</pubTime>
+        
+        <tag>kaggle</tag>
+         
+        <tag>Kobe</tag>
+         
+        <tag>结题报告</tag>
+         
+         
+           
+             
+              <breadCrumb title="数据挖掘" url="http://cupdish.com/categories/%E6%95%B0%E6%8D%AE%E6%8C%96%E6%8E%98/"/>
+          
+        </display>
+    </data>
+    </url>
+
     
   <url>
     <loc>http://cupdish.com/2018/03/28/attention-is-all-you-need/</loc>
-    <lastmod>2018-03-31T09:14:19.230Z</lastmod>
+    <lastmod>2018-11-03T15:10:12.799Z</lastmod>
     <data>
         <display>
         <title>Attention is all you need 论文阅读报告及代码详解</title>
@@ -35,29 +58,6 @@
     </url>
 
     
-  <url>
-    <loc>http://cupdish.com/2016/06/15/kobe/</loc>
-    <lastmod>2018-03-25T01:28:25.328Z</lastmod>
-    <data>
-        <display>
-        <title>Kobe 投篮预测比赛解题报告</title>
-        <pubTime>2016-06-15T00:51:17.000Z</pubTime>
-        
-        <tag>kaggle</tag>
-         
-        <tag>Kobe</tag>
-         
-        <tag>结题报告</tag>
-         
-         
-           
-             
-              <breadCrumb title="数据挖掘" url="http://cupdish.com/categories/%E6%95%B0%E6%8D%AE%E6%8C%96%E6%8E%98/"/>
-          
-        </display>
-    </data>
-    </url>
-
     
   <url>
     <loc>http://cupdish.com/2016/05/29/KDDCup2016-%E6%80%BB%E7%BB%93/</loc>
@@ -120,11 +120,11 @@
         <title>要好好开始写论文了</title>
         <pubTime>2018-03-24T04:56:32.000Z</pubTime>
         
-        <tag>数据挖掘</tag>
-         
         <tag>论文</tag>
          
         <tag>深度学习</tag>
+         
+        <tag>数据挖掘</tag>
          
          
            
