@@ -119,9 +119,9 @@
       <category term="数据挖掘" scheme="http://cupdish.com/categories/%E6%95%B0%E6%8D%AE%E6%8C%96%E6%8E%98/"/>
     
     
-      <category term="kaggle" scheme="http://cupdish.com/tags/kaggle/"/>
-    
       <category term="数据挖掘" scheme="http://cupdish.com/tags/%E6%95%B0%E6%8D%AE%E6%8C%96%E6%8E%98/"/>
+    
+      <category term="kaggle" scheme="http://cupdish.com/tags/kaggle/"/>
     
       <category term="竞赛" scheme="http://cupdish.com/tags/%E7%AB%9E%E8%B5%9B/"/>
     
