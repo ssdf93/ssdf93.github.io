@@ -12,6 +12,7 @@ By Victor Zhang
 
 ===
 ## list
+
 ```python
 list1 = ['Google', 'Runoob', 1997, 2000];
 list2 = [1, 2, 3, 4, 5, 6, 7 ]
@@ -19,7 +20,7 @@ list3 = list("I love python!")
 print(list1[1:5])
 print(list2[::-1])
 ```
-
+`[start:end:step]`
 
 ===
 ## dict
@@ -37,17 +38,64 @@ dd['key1'] = 'abc'
 dd['key1'] # key1存在
 dd['key2'] # key2不存在，返回默认值
 ```
-
 ===
-## set
+## 遍历dict
 ```python
-dict1 = {'Name': 'Runoob', 'Age': 7, 'Class': 'First'}
-print(dict1['Name'], dict1['Age'])
-## error
-print(dict1['Sex'])
+m = {'a': 1, 'b': 2, 'c': 3, 'd': 4}
+for k, v in m.items():
+    print '{}: {}'.format(k, v)
+```
+
+## defaultdict
+```python
+from collections import defaultdict
+dd = defaultdict(lambda: 'N/A')
+dd['key1'] = 'abc'
+dd['key1'] # key1存在
+dd['key2'] # key2不存在，返回默认值
 ```
 
 ===
+## set
+
+```python
+A = {1, 2, 3, 3}
+# set([1, 2, 3])
+B = {3, 4, 5, 6, 7}
+A | B
+# set([1, 2, 3, 4, 5, 6, 7])
+A & B
+# set([3])
+A - B
+# set([1, 2])
+B - A
+# set([4, 5, 6, 7])
+A ^ B
+# set([1, 2, 4, 5, 6, 7])
+(A ^ B) == ((A - B) | (B - A))
+# True
+```
+
+===
+
+## Counter
+
+```python
+from collections import Counter
+words = [
+  'look', 'into', 'my', 'eyes', 'look', 'into', 'my', 'eyes',
+  'the', 'eyes', 'the', 'eyes', 'the', 'eyes', 'not', 'around', 'the',
+  'eyes', ""don't"", 'look', 'around', 'the', 'eyes', 'look', 'into',
+  'my', 'eyes', ""you're"", 'under'
+]
+word_counts = Counter(words)
+top_three = word_counts.most_common(3)
+print(top_three)
+# Outputs [('eyes', 8), ('the', 5), ('look', 4)]"
+```
+
+===
+
 
 ## 列表推导式
 
@@ -79,6 +127,20 @@ for index, element in enumerate(bag):
 
 ## 匿名函数 lambda
 
+```python
+add = lambda x, y: x + y
+add(5, 3)
+
+def add(x, y):
+    return x + y
+add(5, 3)
+```
+
+
+```python
+(lambda x, y: x + y)(5, 3)
+```
+
 ===
 
 ## filter
@@ -91,6 +153,17 @@ for index, element in enumerate(bag):
 
 ===
 
+
+
+## sorted
+
+```python
+sorted(names, key=lambda name: name.split()[-1].lower())
+['Ned Batchelder', 'David Beazley', 'Raymond Hettinger', 'Brian Jones']
+```
+
+===
+
 ## split and join
 ```python
 st1 = "I like apple"
@@ -100,8 +173,14 @@ print(new_string)
 ```
 
 ===
+## with
 
+
+
+===
 ## 正则表达式基础
+
+
 
 ===
 
