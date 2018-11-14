@@ -42,14 +42,18 @@ bag = [elem * 2 for elem in bag]
 ```
 
 ===
+
 ## dict
+
 ```python
 dict1 = {'Name': 'Runoob', 'Age': 7, 'Class': 'First'}
 print(dict1['Name'], dict1['Age'])
 ## error
 print(dict1['Sex'])
 ```
+
 ## defaultdict
+
 ```python
 from collections import defaultdict
 dd = defaultdict(lambda: 'N/A')
@@ -57,24 +61,27 @@ dd['key1'] = 'abc'
 dd['key1'] # key1存在
 dd['key2'] # key2不存在，返回默认值
 ```
+
 ===
+
 ## 遍历dict
+
 ```python
 m = {'a': 1, 'b': 2, 'c': 3, 'd': 4}
 for k, v in m.items():
-    print '{}: {}'.format(k, v)
+    print('{}: {}'.format(k, v))
 ```
 
-## defaultdict
+## OrderedDict
+
 ```python
-from collections import defaultdict
-dd = defaultdict(lambda: 'N/A')
-dd['key1'] = 'abc'
-dd['key1'] # key1存在
-dd['key2'] # key2不存在，返回默认值
+ordered_dict = OrderedDict([('a', 2), ('b', 4), ('c', 5)])
+for key, value in ordered_dict.items():
+    print(key, value)
 ```
 
 ===
+
 ## set
 
 ```python
@@ -119,6 +126,9 @@ print(top_three)
 ===
 
 ## enumerate
+
+`enumerate(sequence, [start=0])`
+
 ```python
 bag = [1, 2, 3, 4, 5]
 for index, element in enumerate(bag):
@@ -159,9 +169,11 @@ add(5, 3)
 ```python
 (lambda x, y: x + y)(5, 3)
 ```
+
 ===
 
 ## map
+
 `map(function, iterable, ...)`
 
 ```python
@@ -193,9 +205,7 @@ newlist = list(tmplist)
 print(newlist)
 ```
 
-
 ===
-
 
 ## sorted
 `sorted(iterable, key=None, reverse=False) `
@@ -223,25 +233,58 @@ print(new_string)
 
 ===
 ## with
+**上下文管理协议（Context Management Protocol）**：包含方法 `__enter__()` 和 `__exit__()`，支持该协议的对象要实现这两个方法。
 
+```python
+with context_expression [as target(s)]:
+    with-body
+```
 
+```python
+f = open('somefile.txt', 'rt')
+data = f.read()
+f.close()
+
+with open('somefile.txt', 'rt') as f:
+    for line in f:
+        # process line
+        ...
+```
+更多请访问 [浅谈 Python 的 with 语句](https://www.ibm.com/developerworks/cn/opensource/os-cn-pythonwith/index.html)
 
 ===
 ## 正则表达式基础
 
+### 特殊字符
+| 符号 | 意义 |
+| --- | --- |
+| $ | 匹配输入字符串的结尾位置。 |
+| ^ | 匹配输入字符串的开始位置，除非在方括号表达式中使用，此时它表示不接受该字符集合。 |
+| (） |6标记一个子表达式的开始和结束位置。子表达式可以获取供以后使用。 |
+| [] | 可选匹配 |
+| * | 匹配前面的子表达式零次或多次。 |
+| + | 匹配前面的子表达式一次或多次。 |
+| . | 匹配除换行符 \n 之外的任何单字符。 |
+| ? | 匹配前面的子表达式零次或一次，或指明一个非贪婪限定符。 |
+| {n} | 匹配确定的 n 次。 |
+| {n,} | 至少匹配n 次。 |
+| {n,m} | 最少匹配 n 次且最多匹配 m 次。 |
+
+更多请访问 [维基百科-正则表达式](https://zh.wikipedia.org/wiki/%E6%AD%A3%E5%88%99%E8%A1%A8%E8%BE%BE%E5%BC%8F)
 
 
 ===
 
-## sublime text 3 中的替换
+## 正则表达式 & Python
+```python
+import re
+re.match(r'\w{6,20}', 'qaz_123_wsx')
+
+```
 
 ===
 
 ## 举个例子
-
-===
-
-## sublime text 3 中的替换
 
 ===
 
