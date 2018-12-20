@@ -1,4 +1,5 @@
 <!DOCTYPE html><html lang="zh-Hans"><head><meta name="generator" content="Hexo 3.8.0"><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><meta name="description" content="自然语言处理与深度学习基础教程1——Python基础与自然语言基础"><meta name="keywords" content="Python3,自然语言处理,并行化,自然语言"><meta name="author" content="Victor Zhang,undefined"><meta name="copyright" content="Victor Zhang"><title>自然语言处理与深度学习基础教程1——Python基础与自然语言基础 | Cupdish.com</title><link rel="shortcut icon" href="/bitbug_favicon.ico"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@3.6.0/css/reveal.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@3.6.0/css/theme/black.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@3.6.0/lib/css/zenburn.min.css"></head><body><div class="reveal"><div class="slides"><section data-markdown="" data-separator="^===" data-separator-vertical="^==" data-charset="utf-8"><script type="text/template">
+
 # Lecture 1 : Python 的相关介绍
 
 By Victor Zhang
@@ -184,7 +185,7 @@ map(square, [1,2,3,4,5])   # 计算列表各个元素的平方
 # [1, 4, 9, 16, 25]
 map(lambda x: x ** 2, [1, 2, 3, 4, 5])  # 使用 lambda 匿名函数
 # [1, 4, 9, 16, 25]
- 
+
 # 提供了两个列表，对相同位置的列表数据进行相加
 map(lambda x, y: x + y, [1, 3, 5, 7, 9], [2, 4, 6, 8, 10])
 # [3, 7, 11, 15, 19]
@@ -208,6 +209,7 @@ print(newlist)
 ===
 
 ## sorted
+
 `sorted(iterable, key=None, reverse=False) `
 
 ```python
@@ -233,6 +235,7 @@ print(new_string)
 
 ===
 ## with
+
 **上下文管理协议（Context Management Protocol）**：包含方法 `__enter__()` 和 `__exit__()`，支持该协议的对象要实现这两个方法。
 
 ```python
@@ -257,7 +260,7 @@ with open('somefile.txt', 'rt') as f:
 
 ### 特殊字符
 | 符号 | 意义 |
-| --- | --- |
+| :-: | --- |
 | $ | 匹配输入字符串的结尾位置。 |
 | ^ | 匹配输入字符串的开始位置，除非在方括号表达式中使用，此时它表示不接受该字符集合。 |
 | (） |6标记一个子表达式的开始和结束位置。子表达式可以获取供以后使用。 |
@@ -272,60 +275,57 @@ with open('somefile.txt', 'rt') as f:
 
 更多请访问 [维基百科-正则表达式](https://zh.wikipedia.org/wiki/%E6%AD%A3%E5%88%99%E8%A1%A8%E8%BE%BE%E5%BC%8F)
 
-
 ===
 
 ## 正则表达式 & Python
 ```python
 import re
-re.match(r'\w{6,20}', 'qaz_123_wsx')
-
+re.search(r'\w{6,20}', 'qaz_123_wsx')
 ```
 
+```python
+import re
+content = 'Hello 1234567 World_This is a Regex Demo'
+result = re.search('^Hello\s(\d+)\sWorld', content)
+print(result)
+# <_sre.SRE_Match object; span=(0, 19), match='Hello 1234567 World'>
+print(result.group())
+# Hello 1234567 World
+print(result.group(1))
+# 1234567
+print(result.span())
+# (0, 19)
+
+print(result.group(1))
+# 7
+```
 ===
 
-## 举个例子
+## 贪婪与非贪婪匹配
 
-===
-
-## sublime text 3 中的替换
-
+```python
+import re
+content = 'Hello 1234567 World_This is a Regex Demo'
+result = re.search('^He.*?(\d+).*Demo$', content)
+print(result)
+# <_sre.SRE_Match object; span=(0, 40), match='Hello 1234567 World_This is a Regex Demo'>
+print(result.group(1))
+# 1234567
+```
 
 ===
 
 ## Python 并行化处理
 
 多进程api
+<!-- ![多CPU机器工作示意图](cpu.jpg) -->
 
 ===
 
 ## pool
-
-
-===
-
-## 词向量
-
-
-===
-
-## word2vec
-
-
-===
-
-## gensim的训练
-
-
-===
-
-## elmo
-
-
-===
-
-## elmo的训练
-
+```python
+from multiprocessing import Pool
+```
 
 
 </script></section></div></div><script src="https://cdn.jsdelivr.net/npm/reveal.js@3.6.0/lib/js/head.min.js"></script><script src="https://cdn.jsdelivr.net/npm/reveal.js@3.6.0/js/reveal.min.js"></script><script>Reveal.initialize({

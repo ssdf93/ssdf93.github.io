@@ -1,0 +1,66 @@
+<!DOCTYPE html><html lang="zh-Hans"><head><meta name="generator" content="Hexo 3.8.0"><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><meta name="description" content="Denoising Distantly Supervised Open-Domain Question Answering 阅读报告"><meta name="keywords" content="深度学习,论文阅读,ACL,阅读理解,自动问答"><meta name="author" content="Victor Zhang,undefined"><meta name="copyright" content="Victor Zhang"><title>Denoising Distantly Supervised Open-Domain Question Answering 阅读报告 | Cupdish.com</title><link rel="shortcut icon" href="/bitbug_favicon.ico"><link rel="stylesheet" href="/css/index.css?version=1.5.6"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css?version=1.5.6"><link rel="dns-prefetch" href="https://cdn.staticfile.org"><link rel="dns-prefetch" href="https://cdn.bootcss.com"><link rel="dns-prefetch" href="https://creativecommons.org"><script>var GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"search.xml","languages":{"hits_empty":"找不到您查询的内容:${query}"}},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  }
+} </script></head><body><canvas class="fireworks"></canvas><i class="fa fa-arrow-right" id="toggle-sidebar" aria-hidden="true"></i><div id="sidebar"><div class="toggle-sidebar-info text-center"><span data-toggle="切换文章详情">切换站点概览</span><hr></div><div class="sidebar-toc"><div class="sidebar-toc__title">目录</div><div class="sidebar-toc__progress"><span class="progress-notice">你已经读了</span><span class="progress-num">0</span><span class="progress-percentage">%</span><div class="sidebar-toc__progress-bar"></div></div><div class="sidebar-toc__content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#简介"><span class="toc-number">1.</span> <span class="toc-text">简介</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#模型动机"><span class="toc-number">2.</span> <span class="toc-text">模型动机</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#本文贡献"><span class="toc-number">3.</span> <span class="toc-text">本文贡献</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#模型详解"><span class="toc-number">4.</span> <span class="toc-text">模型详解</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#段落选择器"><span class="toc-number">4.1.</span> <span class="toc-text">段落选择器</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#编码"><span class="toc-number">4.1.1.</span> <span class="toc-text">编码</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#段落阅读器"><span class="toc-number">4.2.</span> <span class="toc-text">段落阅读器</span></a></li></ol></li></ol></div></div><div class="author-info hide"><div class="author-info__avatar text-center"><img src="/apple-touch-icon.png"></div><div class="author-info__name text-center">Victor Zhang</div><div class="author-info__description text-center">欢迎</div><hr><div class="author-info-articles"><a class="author-info-articles__archives article-meta" href="/archives"><span class="pull-left">文章</span><span class="pull-right">5</span></a><a class="author-info-articles__tags article-meta" href="/tags"><span class="pull-left">标签</span><span class="pull-right">14</span></a><a class="author-info-articles__categories article-meta" href="/categories"><span class="pull-left">分类</span><span class="pull-right">4</span></a></div></div></div><div id="content-outer"><div id="top-container" style="background-image: url(/img/top.jpg)"><div id="page-header"><span class="pull-left"> <a id="site-name" href="/">Cupdish.com</a></span><i class="fa fa-bars toggle-menu pull-right" aria-hidden="true"></i><span class="pull-right menus"><a class="site-page social-icon search"><i class="fa fa-search"></i><span> 搜索</span></a><a class="site-page" href="/">Home</a><a class="site-page" href="/archives">Archives</a><a class="site-page" href="/tags">Tags</a><a class="site-page" href="/categories">Categories</a><a class="site-page" href="/about">About</a></span></div><div id="post-info"><div id="post-title">Denoising Distantly Supervised Open-Domain Question Answering 阅读报告</div><div id="post-meta"><time class="post-meta__date"><i class="fa fa-calendar" aria-hidden="true"></i> 2018-12-20</time><span class="post-meta__separator">|</span><i class="fa fa-inbox post-meta__icon" aria-hidden="true"></i><a class="post-meta__categories" href="/categories/技术/">技术</a><i class="fa fa-angle-right" aria-hidden="true"></i><i class="fa fa-inbox post-meta__icon" aria-hidden="true"></i><a class="post-meta__categories" href="/categories/技术/论文阅读报告/">论文阅读报告</a><span class="post-meta__separator">|</span><i class="fa fa-comment-o post-meta__icon" aria-hidden="true"></i><a href="/2018/12/20/denoising-review/#disqus_thread"><span class="disqus-comment-count" data-disqus-identifier="2018/12/20/denoising-review/"></span></a><div class="post-meta-wordcount"><span>字数总计: </span><span class="word-count">744</span><span class="post-meta__separator">|</span><span>阅读时长: 3 分钟</span></div></div></div></div><div class="layout" id="content-inner"><article id="post"><div class="article-container" id="post-content"><h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>Denoising Distantly Supervised Open-Domain Question Answering 这篇文章是 清华的林衍凯同学和刘知远老师团队在 ACL2018 上发表的文章， 主要解决 开放问答领域中的 远程监督的噪声问题。</p>
+<h2 id="模型动机"><a href="#模型动机" class="headerlink" title="模型动机"></a>模型动机</h2><p>1） 现在的阅读理解，严重依赖于提前提供好的段落，这个和现实中的问答情况不符。</p>
+<blockquote>
+<p>Despite their success, existing reading comprehension systems rely on pre-identiﬁed relevant texts, which do not always exist in real-world question answering (QA) scenarios.</p>
+</blockquote>
+<p>2) 针对上述情况，斯坦福的陈丹琦提出基于远程监督的开放御自动问答系统(DS-QA)。首先从维基百科当中找到相关的信息，然后使用阅读理解的技术去提取答案</p>
+<blockquote>
+<p>Chen et al. (2017) propose a distantly supervised open-domain question answering (DS-QA) system which uses information retrieval technique to obtain relevant text from Wikipedia, and then applies reading comprehension technique to extract the answer.</p>
+</blockquote>
+<p>3）DS-QA的严重的不足是：远程监督带来了大量的噪音。</p>
+<blockquote>
+<p>Although DS-QA proposes an effective strategy to collect relevant texts automatically, it always suffers from the noise issue.</p>
+</blockquote>
+<p>4）一些现存的DS-QA系统，仅仅只是选取最相似的段落，然后对其进行阅读理解。而没有综合考虑多个段落。而往往一个问题的答案会在多个段落中提到（mentioned）</p>
+<blockquote>
+<p>These methods only extract the answer according to the most related paragraph. … In fact, the correct answer is often mentioned in multiple paragraphs, and different aspects of the question may be answered in several paragraphs.</p>
+</blockquote>
+<h2 id="本文贡献"><a href="#本文贡献" class="headerlink" title="本文贡献"></a>本文贡献</h2><p>本文提出了由粗到细的远程监督开放域问答模型（coarseto-ﬁne denoising model for DS-QA）,</p>
+<ul>
+<li>首先通过信息检索找到一些跟问题相关的段落</li>
+<li>使用所有检索到的段落，做快速阅读，并淘汰噪音段落</li>
+<li>使用精读算法（即阅读理解的算法）在上述段落中的各个段落进行精度。</li>
+<li>综合各个段落得到的答案，给出最终答案</li>
+</ul>
+<p><img src="overview.png" alt="The overview of the model"></p>
+<p>本文在Quasar-T、SearchQA、TriviaQA三个数据集效果上显示了显著的提升。并将代码公布到了<a href="https: //github.com/thunlp/OpenQA" target="_blank" rel="noopener">Github</a></p>
+<h2 id="模型详解"><a href="#模型详解" class="headerlink" title="模型详解"></a>模型详解</h2><p>模型分为两部分：1）段落选择器（Paragraph Selector） 和2）段落阅读器（Paragraph Reader）。</p>
+<p>假设问题为$q$，选择到的段落为$P={p_1,p_2,\cdots,p_m}$, 答案为$a$</p>
+<p>段落选择器的目标是，给定$q$，计算$P$中每个段落是相关段落的概率，即：$\text{Pr}(p_i|q,P)$</p>
+<p>段落阅读器的目标是，给定$q$，计算$P$中每个段落$p_i$中得到答案$a$的概率，即：$\text{Pr}(a|q,p_i)$</p>
+<p>综上，给定$q$，得到答案$a$的概率为：<br>$$\text{Pr}(a|q,P)=\sum_{p_i\in P}{\text{Pr}(a|q,p_i)\text{Pr}(p_i|q,P)}$$</p>
+<h3 id="段落选择器"><a href="#段落选择器" class="headerlink" title="段落选择器"></a>段落选择器</h3><h4 id="编码"><a href="#编码" class="headerlink" title="编码"></a>编码</h4><p>使用全连接网络（MLP）或循环神经网络（RNN）对问题和段落进行了编码。并对问题$q$做了<code>self attention</code></p>
+<p>最后，通过交互、池化和<code>softmax</code>求的概率<br>$$\text{Pr}(p_i|q,P)=\text{softmax}(\text{max}_j{(p_i W q)})$$</p>
+<h3 id="段落阅读器"><a href="#段落阅读器" class="headerlink" title="段落阅读器"></a>段落阅读器</h3></div></article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="mailto:undefined">Victor Zhang</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="http://cupdish.com/2018/12/20/denoising-review/">http://cupdish.com/2018/12/20/denoising-review/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="http://cupdish.com" target="_blank">Cupdish.com</a>！</span></div></div><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/深度学习/">深度学习</a><a class="post-meta__tags" href="/tags/论文阅读/">论文阅读</a><a class="post-meta__tags" href="/tags/ACL/">ACL</a><a class="post-meta__tags" href="/tags/阅读理解/">阅读理解</a><a class="post-meta__tags" href="/tags/自动问答/">自动问答</a></div><nav id="pagination"><div class="next-post pull-right"><a href="/2018/03/28/attention-is-all-you-need/"><span>Attention is all you need 论文阅读报告及代码详解</span><i class="fa fa-chevron-right"></i></a></div></nav><div id="disqus_thread"></div><script>var unused = null;
+var disqus_config = function () {
+  this.page.url = 'http://cupdish.com/2018/12/20/denoising-review/';
+  this.page.identifier = '2018/12/20/denoising-review/';
+  this.page.title = 'Denoising Distantly Supervised Open-Domain Question Answering 阅读报告';
+}
+var d = document, s = d.createElement('script');
+s.src = "https://" + 'cupdish' +".disqus.com/embed.js";
+s.setAttribute('data-timestamp', '' + +new Date());
+(d.head || d.body).appendChild(s);</script><script id="dsq-count-src" src="https://cupdish.disqus.com/count.js" async></script></div></div><footer><div class="layout" id="footer"><div class="copyright">&copy;2017 - 2018 By Victor Zhang</div><div class="framework-info"><span>驱动 - </span><a href="http://hexo.io"><span>Hexo</span></a><span class="footer-separator">|</span><span>主题 - </span><a href="https://github.com/Molunerfinn/hexo-theme-melody"><span>Melody</span></a></div><div class="busuanzi"><script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><span id="busuanzi_container_page_pv"><i class="fa fa-file-o"></i><span id="busuanzi_value_page_pv"></span><span></span></span></div></div></footer><i class="fa fa-arrow-up" id="go-up" aria-hidden="true"></i><script src="/js/third-party/anime.min.js"></script><script src="/js/third-party/jquery.min.js"></script><script src="/js/third-party/jquery.fancybox.min.js"></script><script src="/js/third-party/velocity.min.js"></script><script src="/js/third-party/velocity.ui.min.js"></script><script src="/js/utils.js?version=1.5.6"></script><script src="/js/fancybox.js?version=1.5.6"></script><script src="/js/sidebar.js?version=1.5.6"></script><script src="/js/copy.js?version=1.5.6"></script><script src="/js/fireworks.js?version=1.5.6"></script><script src="/js/transition.js?version=1.5.6"></script><script src="/js/scroll.js?version=1.5.6"></script><script src="/js/head.js?version=1.5.6"></script><script type="text/x-mathjax-config">MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+    processEscapes: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+  }
+});
+</script><script type="text/x-mathjax-config">MathJax.Hub.Queue(function() {
+  var all = MathJax.Hub.getAllJax(), i;
+  for (i=0; i < all.length; i += 1) {
+    all[i].SourceElement().parentNode.className += ' has-jax';
+  }
+});
+</script><script src="https://cdn.jsdelivr.net/npm/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><script src="/js/search/local-search.js"></script><div class="search-dialog" id="local-search"><div class="search-dialog__title" id="local-search-title">本地搜索</div><div id="local-input-panel"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章"></div></div></div><hr><div id="local-search-results"><div id="local-hits"></div><div id="local-stats"><div class="local-search-stats__hr" id="hr"><span>由</span> <a href="https://github.com/wzpan/hexo-generator-search" style="color:#49B1F5;">hexo-generator-search</a>
+ <span>提供支持</span></div></div></div><span class="search-close-button"><i class="fa fa-times"></i></span></div><div class="search-mask"></div></body></html>
