@@ -7,7 +7,7 @@
       <link href="/2018/12/20/denoising-review/"/>
       <url>/2018/12/20/denoising-review/</url>
       
-        <content type="html"><![CDATA[<h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>Denoising Distantly Supervised Open-Domain Question Answering 这篇文章是 清华的林衍凯同学和刘知远老师团队在 ACL2018 上发表的文章， 主要解决 开放问答领域中的 远程监督的噪声问题。原文<a href="http://www.thunlp.org/~lyk/publications/acl2018_denoising.pdf" target="_blank" rel="noopener">链接</a></p><a id="more"></a><h2 id="模型动机"><a href="#模型动机" class="headerlink" title="模型动机"></a>模型动机</h2><p>1） 现在的阅读理解，严重依赖于提前提供好的段落，这个和现实中的问答情况不符。</p><blockquote><p>Despite their success, existing reading comprehension systems rely on pre-identiﬁed relevant texts, which do not always exist in real-world question answering (QA) scenarios.</p></blockquote><p>2) 针对上述情况，斯坦福的陈丹琦提出基于远程监督的开放御自动问答系统(DS-QA)。首先从维基百科当中找到相关的信息，然后使用阅读理解的技术去提取答案</p><blockquote><p>Chen et al. (2017) propose a distantly supervised open-domain question answering (DS-QA) system which uses information retrieval technique to obtain relevant text from Wikipedia, and then applies reading comprehension technique to extract the answer.</p></blockquote><p>3）DS-QA的严重的不足是：远程监督带来了大量的噪音。</p><blockquote><p>Although DS-QA proposes an effective strategy to collect relevant texts automatically, it always suffers from the noise issue.</p></blockquote><p>4）一些现存的DS-QA系统，仅仅只是选取最相似的段落，然后对其进行阅读理解。而没有综合考虑多个段落。而往往一个问题的答案会在多个段落中提到（mentioned）</p><blockquote><p>These methods only extract the answer according to the most related paragraph. … In fact, the correct answer is often mentioned in multiple paragraphs, and different aspects of the question may be answered in several paragraphs.</p></blockquote><h2 id="本文贡献"><a href="#本文贡献" class="headerlink" title="本文贡献"></a>本文贡献</h2><p>本文提出了由粗到细的远程监督开放域问答模型（coarseto-ﬁne denoising model for DS-QA）,</p><ul><li>首先通过信息检索找到一些跟问题相关的段落</li><li>使用所有检索到的段落，做快速阅读，并淘汰噪音段落</li><li>使用精读算法（即阅读理解的算法）在上述段落中的各个段落进行精度。</li><li>综合各个段落得到的答案，给出最终答案</li></ul><p><img src="overview.png" alt="The overview of the model"></p><p>本文在Quasar-T、SearchQA、TriviaQA三个数据集效果上显示了显著的提升。并将代码公布到了<a href="https: //github.com/thunlp/OpenQA" target="_blank" rel="noopener">Github</a></p><h2 id="模型详解"><a href="#模型详解" class="headerlink" title="模型详解"></a>模型详解</h2><p>模型分为两部分：1）段落选择器（Paragraph Selector） 和2）段落阅读器（Paragraph Reader）。</p><p>假设问题为$q$，选择到的段落为$P={p_1,p_2,\cdots,p_m}$, 答案为$a$</p><p>段落选择器的目标是，给定$q$，计算$P$中每个段落是相关段落的概率，即：$\text{Pr}(p_i|q,P)$</p><p>段落阅读器的目标是，给定$q$，计算$P$中每个段落$p_i$中得到答案$a$的概率，即：$\text{Pr}(a|q,p_i)$</p><p>综上，给定$q$，得到答案$a$的概率为：<br>$$\text{Pr}(a|q,P)=\sum_{p_i\in P}{\text{Pr}(a|q,p_i)\text{Pr}(p_i|q,P)}$$</p><h3 id="段落选择器"><a href="#段落选择器" class="headerlink" title="段落选择器"></a>段落选择器</h3><h4 id="编码"><a href="#编码" class="headerlink" title="编码"></a>编码</h4><p>使用全连接网络（MLP）或循环神经网络（RNN）对问题和段落进行了编码。并对问题$q$做了<code>self attention</code></p><p>最后，通过交互、池化和<code>softmax</code>求的概率<br>$$\text{Pr}(p_i|q,P)=\text{softmax}(\text{max}_j{(p_i W q)})$$</p><h3 id="段落阅读器"><a href="#段落阅读器" class="headerlink" title="段落阅读器"></a>段落阅读器</h3><p>段落阅读实际上是选择一个<code>span</code>，选择<code>span</code>的头尾指针。即<br>$$\text{Pr}(a|q,p_i) = P_s(a_s)P_e(a_e)$$<br>其中，头尾概率的算法分别是：<br>$$P_s(j)\text{softmax}(p^j_i W_s q)$$<br>$$P_e(j)\text{softmax}(p^j_i W_e q)$$</p><p>因为多多个段落进行阅读，所以可能会有多个不同的答案。这里作者使用了两种方式，<br>一种是选取最大值，另一种是求和。<br>最大值<br>$$\text{Pr}(a|q,p_i) = \max_j P_s(a^j_s)P_e(a^j_e)$$<br>求和<br>$$\text{Pr}(a|q,p_i) = \sum_j P_s(a^j_s)P_e(a^j_e)$$</p><h3 id="损失函数"><a href="#损失函数" class="headerlink" title="损失函数"></a>损失函数</h3><p>随时函数的定义即为$\text{Pr}(a|q,P)$的对数损失<code>logloss</code><br>$$L(\theta) = - \sum \text{Pr}(a|q,P)-\alpha R(P)$$</p><p>其中$R(P)$是<code>段落选择器</code>的正则化项。定义为概率$\text{Pr}(p_i|q,P)$和段落中实际包含答案个数的倒数$\chi_i = \frac{1}{c_P}$之间的正则化KL散度，即：</p><p>$$R(P)=\sum_{p_i \in P}\chi_i \log\frac{\chi_i}{\text{Pr}(p_i|q,P)}$$</p><p>文章使用了<code>Adam</code>优化器进行优化。</p><h2 id="一些细节"><a href="#一些细节" class="headerlink" title="一些细节"></a>一些细节</h2><ol><li>文章的模型定义为<code>Our+FULL</code>和<code>Our+AVG</code>，前者为原文的模型，后者将所有的段落看做相同的均匀分布。在训练前者时，先在后者的基础上在训练集上训练10代。</li><li><p>Quasar-T, SearchQA and TriviaQA 三个数据集的方法和Wang等人的相同，即找到100个候选段落。而CuratedTREC and WebQuestions数据集使用的是2016年12月21日维基百科的语料，并选取了50个作为候选答案，并使用了Lucene作为检索引擎。</p><blockquote><p>Each question is compared to 100 sentence-level candidate passages, retrieved by their IR model from the ClueWeb09 data source, to extract the answer.</p></blockquote></li><li><p>模型的分开训练版本为<code>Our+SINGLE</code>或者<code>Our+INDEP</code>(这里不知道为什么文中说法不统一)。其表示将<code>段落选择器</code>和<code>段落阅读器</code>的两个网络分开训练。因为应用了相同的目标函数，所以<strong>它们的表现相似</strong>。</p></li></ol><h2 id="结论和未来工作"><a href="#结论和未来工作" class="headerlink" title="结论和未来工作"></a>结论和未来工作</h2><p>本文提出了一个去噪的远程监督的开放域问答系统。并取得了不错的效果</p><ul><li>未来工作一：更加精细的段落重排序算法。</li><li>未来工作二：加入先验知识。</li></ul>]]></content>
+        <content type="html"><![CDATA[<h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>Denoising Distantly Supervised Open-Domain Question Answering 这篇文章是 清华的林衍凯同学和刘知远老师团队在 ACL2018 上发表的文章， 主要解决 开放问答领域中的 远程监督的噪声问题。原文<a href="http://www.thunlp.org/~lyk/publications/acl2018_denoising.pdf" target="_blank" rel="noopener">链接</a></p><a id="more"></a><h2 id="模型动机"><a href="#模型动机" class="headerlink" title="模型动机"></a>模型动机</h2><p>1） 现在的阅读理解，严重依赖于提前提供好的段落，这个和现实中的问答情况不符。</p><blockquote><p>Despite their success, existing reading comprehension systems rely on pre-identiﬁed relevant texts, which do not always exist in real-world question answering (QA) scenarios.</p></blockquote><p>2) 针对上述情况，斯坦福的陈丹琦提出基于远程监督的开放域自动问答系统(DS-QA)。首先从维基百科当中找到相关的信息，然后使用阅读理解的技术去提取答案</p><blockquote><p>Chen et al. (2017) propose a distantly supervised open-domain question answering (DS-QA) system which uses information retrieval technique to obtain relevant text from Wikipedia, and then applies reading comprehension technique to extract the answer.</p></blockquote><p>3）DS-QA的严重的不足是：远程监督带来了大量的噪音。</p><blockquote><p>Although DS-QA proposes an effective strategy to collect relevant texts automatically, it always suffers from the noise issue.</p></blockquote><p>4）一些现存的DS-QA系统，仅仅只是选取最相似的段落，然后对其进行阅读理解。而没有综合考虑多个段落。而往往一个问题的答案会在多个段落中提到（mentioned）</p><blockquote><p>These methods only extract the answer according to the most related paragraph. … In fact, the correct answer is often mentioned in multiple paragraphs, and different aspects of the question may be answered in several paragraphs.</p></blockquote><h2 id="本文贡献"><a href="#本文贡献" class="headerlink" title="本文贡献"></a>本文贡献</h2><p>本文提出了由粗到细的远程监督开放域问答模型（coarseto-ﬁne denoising model for DS-QA）,</p><ul><li>首先通过信息检索找到一些跟问题相关的段落</li><li>使用所有检索到的段落，做快速阅读，并淘汰噪音段落</li><li>使用精读算法（即阅读理解的算法）在上述段落中的各个段落进行精度。</li><li>综合各个段落得到的答案，给出最终答案</li></ul><p><img src="overview.png" alt="The overview of the model"></p><p>本文在Quasar-T、SearchQA、TriviaQA三个数据集效果上显示了显著的提升。并将代码公布到了<a href="https: //github.com/thunlp/OpenQA" target="_blank" rel="noopener">Github</a></p><h2 id="模型详解"><a href="#模型详解" class="headerlink" title="模型详解"></a>模型详解</h2><p>模型分为两部分：1）段落选择器（Paragraph Selector） 和2）段落阅读器（Paragraph Reader）。</p><p>假设问题为$q$，选择到的段落为$P={p_1,p_2,\cdots,p_m}$, 答案为$a$</p><p>段落选择器的目标是，给定$q$，计算$P$中每个段落是相关段落的概率，即：$\text{Pr}(p_i|q,P)$</p><p>段落阅读器的目标是，给定$q$，计算$P$中每个段落$p_i$中得到答案$a$的概率，即：$\text{Pr}(a|q,p_i)$</p><p>综上，给定$q$，得到答案$a$的概率为：<br>$$\text{Pr}(a|q,P)=\sum_{p_i\in P}{\text{Pr}(a|q,p_i)\text{Pr}(p_i|q,P)}$$</p><h3 id="段落选择器"><a href="#段落选择器" class="headerlink" title="段落选择器"></a>段落选择器</h3><h4 id="编码"><a href="#编码" class="headerlink" title="编码"></a>编码</h4><p>使用全连接网络（MLP）或循环神经网络（RNN）对问题和段落进行了编码。并对问题$q$做了<code>self attention</code></p><p>最后，通过交互、池化和<code>softmax</code>求的概率<br>$$\text{Pr}(p_i|q,P)=\text{softmax}(\text{max}_j{(p_i W q)})$$</p><h3 id="段落阅读器"><a href="#段落阅读器" class="headerlink" title="段落阅读器"></a>段落阅读器</h3><p>段落阅读实际上是选择一个<code>span</code>，选择<code>span</code>的头尾指针。即<br>$$\text{Pr}(a|q,p_i) = P_s(a_s)P_e(a_e)$$<br>其中，头尾概率的算法分别是：<br>$$P_s(j) = \text{softmax}(p^j_i W_s q)$$<br>$$P_e(j) = \text{softmax}(p^j_i W_e q)$$</p><p>因为多多个段落进行阅读，所以可能会有多个不同的答案。这里作者使用了两种方式，<br>一种是选取最大值，另一种是求和。<br>最大值<br>$$\text{Pr}(a|q,p_i) = \max_j P_s(a^j_s)P_e(a^j_e)$$<br>求和<br>$$\text{Pr}(a|q,p_i) = \sum_j P_s(a^j_s)P_e(a^j_e)$$</p><h3 id="损失函数"><a href="#损失函数" class="headerlink" title="损失函数"></a>损失函数</h3><p>随时函数的定义即为$\text{Pr}(a|q,P)$的对数损失<code>logloss</code><br>$$L(\theta) = - \sum \text{Pr}(a|q,P)-\alpha R(P)$$</p><p>其中$R(P)$是<code>段落选择器</code>的正则化项。定义为概率$\text{Pr}(p_i|q,P)$和段落中实际包含答案个数的倒数$\chi_i = \frac{1}{c_P}$之间的正则化KL散度，即：</p><p>$$R(P)=\sum_{p_i \in P}\chi_i \log\frac{\chi_i}{\text{Pr}(p_i|q,P)}$$</p><p>文章使用了<code>Adam</code>优化器进行优化。</p><h2 id="一些细节"><a href="#一些细节" class="headerlink" title="一些细节"></a>一些细节</h2><ol><li>文章的模型定义为<code>Our+FULL</code>和<code>Our+AVG</code>，前者为原文的模型，后者将所有的段落看做相同的均匀分布。在训练前者时，先在后者的基础上在训练集上训练10代。</li><li><p>Quasar-T, SearchQA and TriviaQA 三个数据集的方法和Wang等人的相同，即找到100个候选段落。而CuratedTREC and WebQuestions数据集使用的是2016年12月21日维基百科的语料，并选取了50个作为候选答案，并使用了Lucene作为检索引擎。</p><blockquote><p>Each question is compared to 100 sentence-level candidate passages, retrieved by their IR model from the ClueWeb09 data source, to extract the answer.</p></blockquote></li><li><p>模型的分开训练版本为<code>Our+SINGLE</code>或者<code>Our+INDEP</code>(这里不知道为什么文中说法不统一)。其表示将<code>段落选择器</code>和<code>段落阅读器</code>的两个网络分开训练。因为应用了相同的目标函数，所以<strong>它们的表现相似</strong>。</p></li></ol><h2 id="结论和未来工作"><a href="#结论和未来工作" class="headerlink" title="结论和未来工作"></a>结论和未来工作</h2><p>本文提出了一个去噪的远程监督的开放域问答系统。并取得了不错的效果</p><ul><li>未来工作一：更加精细的段落重排序算法。</li><li>未来工作二：加入先验知识。</li></ul>]]></content>
       
       
       <categories>
@@ -21,9 +21,9 @@
       
         <tags>
             
-            <tag> 深度学习 </tag>
-            
             <tag> 论文阅读 </tag>
+            
+            <tag> 深度学习 </tag>
             
             <tag> ACL </tag>
             
@@ -54,13 +54,13 @@
       
         <tags>
             
-            <tag> 深度学习 </tag>
-            
             <tag> 论文阅读 </tag>
             
             <tag> 谷歌 </tag>
             
             <tag> 代码 </tag>
+            
+            <tag> 深度学习 </tag>
             
             <tag> 注意力机制 </tag>
             
@@ -87,9 +87,9 @@
             
             <tag> 数据挖掘 </tag>
             
-            <tag> 论文 </tag>
-            
             <tag> 深度学习 </tag>
+            
+            <tag> 论文 </tag>
             
         </tags>
       
@@ -139,9 +139,9 @@
       
         <tags>
             
-            <tag> 数据挖掘 </tag>
-            
             <tag> kaggle </tag>
+            
+            <tag> 数据挖掘 </tag>
             
             <tag> 竞赛 </tag>
             
