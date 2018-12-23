@@ -6,7 +6,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://cupdish.com/"/>
-  <updated>2018-12-21T13:04:02.548Z</updated>
+  <updated>2018-12-23T08:18:01.184Z</updated>
   <id>http://cupdish.com/</id>
   
   <author>
@@ -15,6 +15,42 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>Reading Wikipedia to Answer Open-Domain Questions 论文阅读报告</title>
+    <link href="http://cupdish.com/2018/12/21/drqa-review/"/>
+    <id>http://cupdish.com/2018/12/21/drqa-review/</id>
+    <published>2018-12-21T13:28:50.000Z</published>
+    <updated>2018-12-23T08:18:01.184Z</updated>
+    
+    <content type="html"><![CDATA[<h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>Reading Wikipedia to Answer Open-Domain Questions 这篇文章是 斯坦福博士生 陈丹琦 发表在ACL2017 上的文章，她的工作主要是她在Facebook实习时做的，主要解决使用维基百科来解决开放领域的自动问答问题。原文<a href="https://aclanthology.info/papers/P17-1171/p17-1171" target="_blank" rel="noopener">链接</a>。并且，论文的源码和系统已经公布在<a href="https://github.com/facebookresearch/DrQA" target="_blank" rel="noopener">Github</a></p><p>Facebook首席科学家Yann LeCun也推荐了该系统</p><blockquote><p>DrQA 是一个开放域的问答系统。向 DrQA 系统输入一段文本，然后提一个答案能在该文本中找到的问题，那么 DrQA 就能给出这个问题的答案。代码相关的论文将在 ACL 发表。向该团队致敬：FAIR 研究工程师 Adam Fisch、斯坦福博士实习生 Danqi Chen 和 FAIR 科学家 Jason Weston 和 Antoine Bordes。</p></blockquote><a id="more"></a><h2 id="模型动机"><a href="#模型动机" class="headerlink" title="模型动机"></a>模型动机</h2><p>文章提出，许多知识图谱，他们的知识都过于稀疏，对于解决开放领域的问答不是特别适合。而维基百科，是一个实时更新的数据集，但是它是适合人读的，而不太适合机器进行阅读。</p><p>使用维基百科作为问答任务的知识源（knowledge source）来进行开放域自动问答，实际上就是先进行信息检索，在5百万词条中找到相关词条，然后对每个词条进行详细的阅读，以便找到相关答案。</p><blockquote><p>In order to answer any question, one must ﬁrst retrieve the few relevant articles among more than 5 million items, and then scan them carefully to identify the answer.</p></blockquote><p>现存的机器阅读理解任务也是基于类似维基百科数据而创造的一些数据集，然而，机器阅读理解严重依赖于提供的任务文本，这对于真实的开放域的自动问答是不现实的。本文定义的任务 <code>大规模阅读理解</code> MRS（machine reading at scale）就是将这两个结合起来，既需要对大量的语料进行检索，又需要对文本进行详细的分析。</p><blockquote><p>Instead MRS is focused on simultaneously maintaining the challenge of machine comprehension, which requires the deep understanding of text, while keeping the realistic constraint of searching over a large open resource.</p></blockquote><h2 id="本文贡献"><a href="#本文贡献" class="headerlink" title="本文贡献"></a>本文贡献</h2><p>本文提出了一个名为DrQA的系统，包含两个主要的部分，文档召回器（Document Retriever）和文档阅读器（Document Reader）。文档召回器主要使用了 <code>二元词袋哈希</code>（Bigram Hash） 和 <code>TF-IDF</code> 匹配。 而文档阅读器主要是一个多层的循环神经网络阅读理解模型，主要找寻文本的<code>span</code>。</p><h2 id="模型详解"><a href="#模型详解" class="headerlink" title="模型详解"></a>模型详解</h2><p>如图所示即为整个DrQA系统的示意图。下面分两个部分介绍DrQA系统。<br><img src="drqa.png" alt="A review of DrQA"></p><h3 id="Document-Retriever"><a href="#Document-Retriever" class="headerlink" title="Document Retriever"></a>Document Retriever</h3><p><code>Document Retriever</code> 是一个快速的文档检索找回系统，本文为了考虑词的顺序，使用了<code>n-gram</code>特征。且在考虑到速率和内存利用率后，选用了<code>bigram</code>二元词袋哈希。具体思想是使用<code>murmur3</code>哈希算法，将所有的二元词袋，映射到$2^{24}$空间的二进制数上面去。</p><p>而在召回文档时，每次选择最相近的5个维基百科的文档。</p><h3 id="Document-Reader"><a href="#Document-Reader" class="headerlink" title="Document Reader"></a>Document Reader</h3><p><code>Document Reader</code> 首先对段落和问题都进行了编码，然后通过编码计算答案的首尾出现概率，通过其概率算得联合概率，取联合概率的最大值，得到问题的答案。</p><h4 id="段落编码"><a href="#段落编码" class="headerlink" title="段落编码"></a>段落编码</h4><p>首先对段落$P$的词向量特征$P={p_1,p_2,\cdot,p_m}$过一层<code>RNN</code>，文中选用的是双向的LSTM。</p><p>词向量特征$p_i$由以下特征构成：</p><ul><li>词向量，直接用的<code>glove 840B</code>词向量，且对频率最高的1000个词进行微调<code>fine-tune</code>，其他词词向量固定不变。作者这么做是认为<code>what</code>，<code>how</code>，<code>why</code>等高频词会对问答有影响。</li><li>三个维度的指示器<code>Exact Match</code>，判断段落中的每个词是否在问题中出现了，如果出现了就是1，没有出现就是0。</li><li>词的语义特征。词性标注、实体标注以及词频。即（POS，NER，TF）。</li><li>对其的问题嵌入特征。即对问题的注意力特征。该特征考虑段落中的每个词与问题中每个词的相似度。该相似度组成了一个矩阵向量$a_{i,j}$即为每个词$p_i$的向量特征，这个特征是对<code>Exact Match</code>特征的进一步优化，其计算公式如下：<br>  $$a_{i,j}=\frac{\exp(\alpha(E(p_i))\cdot\alpha(E(q_j)))}{\sum_{j’}{\exp(\alpha(E(p_i))\cdot\alpha(E(q_{j’})))}}$$<br>其中,$\alpha()$为一个全连接层。</li></ul><h4 id="问题编码"><a href="#问题编码" class="headerlink" title="问题编码"></a>问题编码</h4><p>问题编码的过程就相对简单，仅仅使用了一个<code>RNN</code>网络，得到${q_1,q_2,\cdots,q_l}$，仅仅用加权平均得到最终的向量表示$\mathbf{q}=\sum_j{b_j \mathbf{q}_j}$，而$b_j$是通过以下公式学习得到的:<br>$$b_j=\frac{\exp(\mathbf{w}\cdot\mathbf{q}<em>j)}{\sum</em>{j’}\exp(\mathbf{w}\cdot\mathbf{q}_{j’})}$$</p><h3 id="模型输出"><a href="#模型输出" class="headerlink" title="模型输出"></a>模型输出</h3><p>为了输出预测答案的<code>span</code>，答案的首尾概率分别为：<br>$$P_s(j) = \text{softmax}(p^j_i W_s q)$$和<br>$$P_e(j) = \text{softmax}(p^j_i W_e q)$$</p><p>计算收尾概率的联合分布：$P_s(j)\times P_e(j)$，且保证答案呢长度小于15，选择联合概率最大的结果作为模型输出答案。</p><h2 id="一些细节"><a href="#一些细节" class="headerlink" title="一些细节"></a>一些细节</h2><ol><li><p>模型使用了<code>2016-12-21</code>版本的英文维基百科语料数据，得到了<code>5,075,182</code>条文章，<code>9,008,962</code>条词条。</p></li><li><p>训练集的构造方法，使用了远程监督的方法。首先使用<code>Document Retriever</code>召回5篇维基百科文章。对于每一篇文章，去除所有不能够完全匹配答案的段落。小于25词大于1500词的段落也被丢弃掉了。如果问题中有命名实体<code>named entity</code>，则删掉所有不包含该实体的段落，然后在段落中包含答案的位置以20个词为窗口，计算与问题的<code>unigram</code>和<code>bigram</code>的重叠比例，选取重叠度最高的5个段落，将它们加入到训练集。如果不包含重叠，则舍弃这个样本。</p></li></ol><h2 id="结论和未来工作"><a href="#结论和未来工作" class="headerlink" title="结论和未来工作"></a>结论和未来工作</h2><p>尽管开放领域的问答现在效果不好，F1值从79%降到了28%。但是本文作者是尝试将阅读理解和信息检索结合起来，为后续的工作打下了很好的基础。作者提出了2个改进方向。</p><ol><li>对多个不同的段落进行组合，联合训练，而不是现在对单一段落进行训练</li><li><code>Document Retriever</code>和<code>Document Reader</code>目前是分开的两个系统，可以构建一个端到端的系统，将两个模型结合起来。 </li></ol>]]></content>
+    
+    <summary type="html">
+    
+      &lt;h2 id=&quot;简介&quot;&gt;&lt;a href=&quot;#简介&quot; class=&quot;headerlink&quot; title=&quot;简介&quot;&gt;&lt;/a&gt;简介&lt;/h2&gt;&lt;p&gt;Reading Wikipedia to Answer Open-Domain Questions 这篇文章是 斯坦福博士生 陈丹琦 发表在ACL2017 上的文章，她的工作主要是她在Facebook实习时做的，主要解决使用维基百科来解决开放领域的自动问答问题。原文&lt;a href=&quot;https://aclanthology.info/papers/P17-1171/p17-1171&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;链接&lt;/a&gt;。并且，论文的源码和系统已经公布在&lt;a href=&quot;https://github.com/facebookresearch/DrQA&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;Github&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;Facebook首席科学家Yann LeCun也推荐了该系统&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;DrQA 是一个开放域的问答系统。向 DrQA 系统输入一段文本，然后提一个答案能在该文本中找到的问题，那么 DrQA 就能给出这个问题的答案。代码相关的论文将在 ACL 发表。向该团队致敬：FAIR 研究工程师 Adam Fisch、斯坦福博士实习生 Danqi Chen 和 FAIR 科学家 Jason Weston 和 Antoine Bordes。&lt;/p&gt;
+&lt;/blockquote&gt;
+    
+    </summary>
+    
+      <category term="技术" scheme="http://cupdish.com/categories/%E6%8A%80%E6%9C%AF/"/>
+    
+      <category term="论文阅读报告" scheme="http://cupdish.com/categories/%E6%8A%80%E6%9C%AF/%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB%E6%8A%A5%E5%91%8A/"/>
+    
+    
+      <category term="深度学习" scheme="http://cupdish.com/tags/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0/"/>
+    
+      <category term="论文阅读" scheme="http://cupdish.com/tags/%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB/"/>
+    
+      <category term="ACL" scheme="http://cupdish.com/tags/ACL/"/>
+    
+      <category term="阅读理解" scheme="http://cupdish.com/tags/%E9%98%85%E8%AF%BB%E7%90%86%E8%A7%A3/"/>
+    
+      <category term="自动问答" scheme="http://cupdish.com/tags/%E8%87%AA%E5%8A%A8%E9%97%AE%E7%AD%94/"/>
+    
+  </entry>
   
   <entry>
     <title>Denoising Distantly Supervised Open-Domain Question Answering 阅读报告</title>
@@ -36,9 +72,9 @@
       <category term="论文阅读报告" scheme="http://cupdish.com/categories/%E6%8A%80%E6%9C%AF/%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB%E6%8A%A5%E5%91%8A/"/>
     
     
-      <category term="论文阅读" scheme="http://cupdish.com/tags/%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB/"/>
-    
       <category term="深度学习" scheme="http://cupdish.com/tags/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0/"/>
+    
+      <category term="论文阅读" scheme="http://cupdish.com/tags/%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB/"/>
     
       <category term="ACL" scheme="http://cupdish.com/tags/ACL/"/>
     
@@ -69,13 +105,13 @@
       <category term="论文阅读报告" scheme="http://cupdish.com/categories/%E6%8A%80%E6%9C%AF/%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB%E6%8A%A5%E5%91%8A/"/>
     
     
+      <category term="深度学习" scheme="http://cupdish.com/tags/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0/"/>
+    
       <category term="论文阅读" scheme="http://cupdish.com/tags/%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB/"/>
     
       <category term="谷歌" scheme="http://cupdish.com/tags/%E8%B0%B7%E6%AD%8C/"/>
     
       <category term="代码" scheme="http://cupdish.com/tags/%E4%BB%A3%E7%A0%81/"/>
-    
-      <category term="深度学习" scheme="http://cupdish.com/tags/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0/"/>
     
       <category term="注意力机制" scheme="http://cupdish.com/tags/%E6%B3%A8%E6%84%8F%E5%8A%9B%E6%9C%BA%E5%88%B6/"/>
     
@@ -101,9 +137,9 @@
     
       <category term="数据挖掘" scheme="http://cupdish.com/tags/%E6%95%B0%E6%8D%AE%E6%8C%96%E6%8E%98/"/>
     
-      <category term="深度学习" scheme="http://cupdish.com/tags/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0/"/>
-    
       <category term="论文" scheme="http://cupdish.com/tags/%E8%AE%BA%E6%96%87/"/>
+    
+      <category term="深度学习" scheme="http://cupdish.com/tags/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0/"/>
     
   </entry>
   
@@ -151,9 +187,9 @@
       <category term="数据挖掘" scheme="http://cupdish.com/categories/%E6%95%B0%E6%8D%AE%E6%8C%96%E6%8E%98/"/>
     
     
-      <category term="kaggle" scheme="http://cupdish.com/tags/kaggle/"/>
-    
       <category term="数据挖掘" scheme="http://cupdish.com/tags/%E6%95%B0%E6%8D%AE%E6%8C%96%E6%8E%98/"/>
+    
+      <category term="kaggle" scheme="http://cupdish.com/tags/kaggle/"/>
     
       <category term="竞赛" scheme="http://cupdish.com/tags/%E7%AB%9E%E8%B5%9B/"/>
     
