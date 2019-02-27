@@ -135,11 +135,11 @@
       <category term="技术" scheme="http://cupdish.com/categories/%E6%8A%80%E6%9C%AF/"/>
     
     
-      <category term="数据挖掘" scheme="http://cupdish.com/tags/%E6%95%B0%E6%8D%AE%E6%8C%96%E6%8E%98/"/>
-    
       <category term="论文" scheme="http://cupdish.com/tags/%E8%AE%BA%E6%96%87/"/>
     
       <category term="深度学习" scheme="http://cupdish.com/tags/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0/"/>
+    
+      <category term="数据挖掘" scheme="http://cupdish.com/tags/%E6%95%B0%E6%8D%AE%E6%8C%96%E6%8E%98/"/>
     
   </entry>
   
@@ -187,9 +187,9 @@
       <category term="数据挖掘" scheme="http://cupdish.com/categories/%E6%95%B0%E6%8D%AE%E6%8C%96%E6%8E%98/"/>
     
     
-      <category term="kaggle" scheme="http://cupdish.com/tags/kaggle/"/>
-    
       <category term="数据挖掘" scheme="http://cupdish.com/tags/%E6%95%B0%E6%8D%AE%E6%8C%96%E6%8E%98/"/>
+    
+      <category term="kaggle" scheme="http://cupdish.com/tags/kaggle/"/>
     
       <category term="竞赛" scheme="http://cupdish.com/tags/%E7%AB%9E%E8%B5%9B/"/>
     
